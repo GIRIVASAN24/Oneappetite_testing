@@ -4,6 +4,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindAll;
 import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.ui.Select;
 
 import java.util.List;
 
@@ -12,75 +13,58 @@ public class VendorMenuMgmtPage extends BasePage {
     @FindBy(xpath = "//button[normalize-space()='Add Menu Item']")
     private WebElement addItemBtn;
 
-    @FindAll({
-            @FindBy(css = "[role='dialog']"),
-            @FindBy(css = ".modal")
-    })
+    @FindBy(xpath = "//div[@role='dialog']")
     private List<WebElement> modalEls;
 
-    @FindAll({
-            @FindBy(css = "input[name='name']"),
-            @FindBy(css = "input[placeholder*='Item name' i]")
-    })
+    @FindBy(xpath = "//input[@name='itemName']")
     private WebElement itemName;
 
-    @FindAll({
-            @FindBy(css = "input[name='category']"),
-            @FindBy(css = "select[name='category']")
-    })
+    @FindBy(xpath = "//input[@name='category']")
     private WebElement category;
 
-    @FindAll({
-            @FindBy(css = "select[name='mealCourse']"),
-            @FindBy(css = "input[name='mealCourse']")
-    })
+    @FindBy(xpath = "//select[@name='mealCourse']")
     private WebElement mealCourse;
 
-    @FindBy(css = "input[name='price']")
+    @FindBy(xpath = "//select[@name='dietaryType']")
+    private WebElement dietaryType;
+
+    @FindBy(xpath = "//input[@name='price']")
     private WebElement price;
 
-    @FindAll({
-            @FindBy(css = "input[name='quantity']"),
-            @FindBy(css = "input[name='qty']")
-    })
+    @FindBy(xpath = "//input[@name='quantityAvailable']")
     private WebElement quantity;
 
-    @FindBy(css = "input[name='prepTime']")
+    @FindBy(xpath = "//input[@name='minPrepTime']")
     private WebElement prepTime;
 
-    @FindAll({
-            @FindBy(css = "input[name='imageUrl']"),
-            @FindBy(css = "input[name='image']")
-    })
+    @FindBy(xpath = "//input[@name='imageUrl']")
     private WebElement imageUrl;
 
-    @FindBy(xpath = "//button[normalize-space()='Save']")
+    @FindBy(xpath = "//button[normalize-space()='Add Item']")
     private WebElement saveBtn;
 
-    @FindAll({
-            @FindBy(css = "[data-testid='edit-item']"),
-            @FindBy(css = "button[aria-label*='Edit' i]")
-    })
+    @FindBy(xpath = "//button[@title='Edit']")
     private WebElement editIcon;
 
-    @FindAll({
-            @FindBy(css = "[data-testid='delete-item']"),
-            @FindBy(css = "button[aria-label*='Delete' i]")
-    })
+    @FindBy(xpath = "//button[@title='Delete']")
     private WebElement deleteIcon;
 
-    @FindAll({
-            @FindBy(css = "[data-testid='stock-toggle']"),
-            @FindBy(css = "input[type='checkbox'].stock-toggle")
-    })
+    @FindBy(xpath = "(//span[@class='knob'])[1]")
     private WebElement stockToggle;
 
-    @FindBy(xpath = "//button[normalize-space()='Confirm']")
+    @FindBy(xpath = "//button[normalize-space()='Yes, remove']")
     private WebElement confirmBtn;
 
     public VendorMenuMgmtPage(WebDriver driver) { super(driver); }
 
-    public boolean isLoaded()  { return isDisplayed(addItemBtn); }
+    public boolean isLoaded() {
+        try {
+            waitVisible(addItemBtn);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
     public void clickAddItem() { click(addItemBtn); }
     public boolean modalOpen() { return anyDisplayed(modalEls); }
 
@@ -88,9 +72,8 @@ public class VendorMenuMgmtPage extends BasePage {
                      String pr, String qty, String prep, String img) {
         if (name != null)   type(itemName, name);
         if (cat != null)    type(category, cat);
-        if (course != null) type(mealCourse, course);
-        if ("Veg".equalsIgnoreCase(diet))    clickByText("Veg");
-        if ("Non-Veg".equalsIgnoreCase(diet)) clickByText("Non-Veg");
+        if (course != null) new Select(waitVisible(mealCourse)).selectByVisibleText(course);
+        if (diet != null)   new Select(waitVisible(dietaryType)).selectByVisibleText(diet);
         if (pr != null)   type(price, pr);
         if (qty != null)  type(quantity, qty);
         if (prep != null) type(prepTime, prep);
@@ -101,6 +84,40 @@ public class VendorMenuMgmtPage extends BasePage {
     public void clickFirstEdit()  { click(editIcon); }
     public void clickFirstDelete(){ click(deleteIcon); }
     public void confirmDelete()   { click(confirmBtn); }
+
+    public boolean confirmDialogVisible() {
+        try { waitVisible(confirmBtn); return true; }
+        catch (Exception e) { return false; }
+    }
+    public boolean saveDialogVisible() {
+        try { waitVisible(saveBtn); return true; }
+        catch (Exception e) { return false; }
+    }
+
+    public boolean isSaveDisabled() {
+        try {
+            WebElement el = waitVisible(saveBtn);
+            if (!el.isEnabled()) return true;
+            String disabled = el.getAttribute("disabled");
+            String aria     = el.getAttribute("aria-disabled");
+            return disabled != null
+                    || "true".equalsIgnoreCase(aria);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean priceFieldInvalid() {
+        try {
+            WebElement el = waitVisible(price);
+            String aria = el.getAttribute("aria-invalid");
+            String cls  = el.getAttribute("class");
+            return "true".equalsIgnoreCase(aria)
+                    || (cls != null && (cls.contains("ng-invalid") || cls.contains("invalid")));
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     public void toggleFirstStock() { click(stockToggle); }
     public WebElement firstStockSwitch() { return waitVisible(stockToggle); }

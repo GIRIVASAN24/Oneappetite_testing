@@ -2,6 +2,7 @@ package com.cts.mfrp.oneappetite.pages;
 
 import com.cts.mfrp.oneappetite.utils.ConfigReader;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
@@ -45,7 +46,22 @@ public abstract class BasePage {
         return wait.until(ExpectedConditions.elementToBeClickable(el));
     }
 
-    protected void click(WebElement el) { waitClickable(el).click(); }
+    /** Scroll the element to the viewport center before clicking; if a sticky overlay
+     *  intercepts the native click, fall back to a JS click. */
+    protected void click(WebElement el) {
+        WebElement target = waitClickable(el);
+        scrollIntoView(target);
+        try {
+            target.click();
+        } catch (ElementClickInterceptedException intercepted) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", target);
+        }
+    }
+
+    protected void scrollIntoView(WebElement el) {
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].scrollIntoView({block:'center', inline:'center'});", el);
+    }
 
     protected void type(WebElement el, String text) {
         WebElement v = waitVisible(el);
