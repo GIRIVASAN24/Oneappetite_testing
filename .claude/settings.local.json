@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn -version)",
+      "Bash(mvn -q -DskipTests test-compile)",
+      "Bash(mvn -DskipTests test-compile)",
+      "Bash(mvn clean *)",
+      "WebFetch(domain:oneappetite-frontend.onrender.com)",
+      "Bash(curl -s -o nul -w \"Status: %{http_code}\\\\nFinal URL: %{url_effective}\\\\n\" -L https://oneappetite-frontend.onrender.com/my-orders)",
+      "Bash(curl -s -L https://oneappetite-frontend.onrender.com/)",
+      "Bash(curl -s -L https://oneappetite-frontend.onrender.com/main-AHAMWTW7.js -o \"C:/temp/oneappetite-main.js\")",
+      "Bash(powershell -Command \"\\(Get-Item 'C:/temp/oneappetite-main.js'\\).Length\")",
+      "Bash(curl -s -L -o \"C:/Users/2479800/Downloads/oa-main.js\" https://oneappetite-frontend.onrender.com/main-AHAMWTW7.js)",
+      "Bash(powershell -Command \"\\(Get-Item 'C:/Users/2479800/Downloads/oa-main.js'\\).Length\")"
+    ]
+  }
+}
